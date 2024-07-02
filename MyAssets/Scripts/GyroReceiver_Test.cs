@@ -12,7 +12,7 @@ using OscSimpl;
 
 public class GyroReceiver_Test : MonoBehaviour
 {
-    public Transform phoneT;  // 3D 모델의 Transform
+    public Transform phone;  // 3D 모델의 Transform
     public float motionDelay = 0.1f;  // 회전 시 딜레이
     public TextMeshProUGUI gyroText;  // UI 텍스트 (선택사항)
     
@@ -55,9 +55,9 @@ public class GyroReceiver_Test : MonoBehaviour
 
     private void UpdateGyro()
     {
-        gyroText.text = "x: " + x + "\ny: " + y + "\nz: " + z + "\nw: " + w;  // 회전 값 표시 (선택사항)
+        gyroText.text = "x: " + x + "\ny: " + y + "\nz: " + z + "\nw: " + w;  
         Quaternion resultRotation = Quaternion.Inverse(initialRotation) * new Quaternion(x, y, z, w);
-        phoneT.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
+        phone.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
     }
 
     private void UpdateRotateText()
