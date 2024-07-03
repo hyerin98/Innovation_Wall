@@ -29,3 +29,12 @@ tcp와 달리 udp는 별도의 udp 서버 클래스가 없으면, 서버도 udpC
 
 디바이스 ip 고정하기
 192.168.10.111
+
+Sensor_2 keeps stopping
+
+udp통신
+
+oscIn
+
+앱만 받아와서 디바이스 ip 고정하고
+wall빌드하면 될것

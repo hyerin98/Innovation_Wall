@@ -2,66 +2,69 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
-using UnityEngine.Events;
-using System;
-using System.Net;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 using OscSimpl;
+using IMFINE.Utils.ConfigManager;
 
 public class GyroReceiver_Test : MonoBehaviour
 {
-    public Transform phone;  // 3D 모델의 Transform
-    public float motionDelay = 0.1f;  // 회전 시 딜레이
-    public TextMeshProUGUI gyroText;  // UI 텍스트 (선택사항)
-    
+    public Transform phone; 
+    public float motionDelay = 0.1f;  
+    public TextMeshProUGUI gyroText;  
+
     private float x, y, z, w;
     private Quaternion initialRotation;
 
     [Header("OSC Settings")]
-    public string address = "/gyro";  // OSC 주소
-    public int port = 17701;  // 포트 번호
+    public string address = "/gyro";  
+    public int port = 17701;  
 
     private OscIn oscIn;
-    private UdpReceiver udpReceiver;
 
     void Start()
     {
-        oscIn = gameObject.AddComponent<OscIn>();
-        oscIn._port = port;
-        //oscIn.Bind(address, OnMessageReceived);
+        oscIn = gameObject.AddComponent<OscIn>(); 
+        oscIn.Open(port); 
+        oscIn.Map(address, OnMessageReceived); 
 
-        initialRotation = Quaternion.identity;
+        initialRotation = Quaternion.identity; 
     }
 
-    public void OnClickCalibrationButton()
+
+    void OnMessageReceived(OscMessage message)
     {
-        initialRotation = new Quaternion(x, y, z, w);
+        Debug.Log("OSC Message Received");
+
+        if (message.Count() != 4) return;
+
+        if (ConfigManager.instance.data.showGyroLog)
+            TraceBox.Log("[R]: " + message);
+
+        if (message.TryGet(0, out x) &&
+            message.TryGet(1, out y) &&
+            message.TryGet(2, out z) &&
+            message.TryGet(3, out w))
+        {
+            UpdateGyro();
+        }
+        else
+        {
+            Debug.LogWarning("Failed to parse OSC message.");
+        }
+
+        OscPool.Recycle(message);
     }
 
-    // private void OnMessageReceived(OSCMessage message)
-    // {
-    //     if (message.ToFloat(out float[] values) && values.Length == 4)
-    //     {
-    //         x = values[0];
-    //         y = values[1];
-    //         z = values[2];
-    //         w = values[3];
-
-    //         UpdateGyro();
-    //     }
-    // }
 
     private void UpdateGyro()
     {
-        gyroText.text = "x: " + x + "\ny: " + y + "\nz: " + z + "\nw: " + w;  
+        gyroText.text = "x: " + x + "\ny: " + y + "\nz: " + z + "\nw: " + w; 
+
         Quaternion resultRotation = Quaternion.Inverse(initialRotation) * new Quaternion(x, y, z, w);
         phone.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
     }
 
     private void UpdateRotateText()
     {
-        // 회전 업데이트 텍스트 갱신 (선택사항)
+        // 회전 업데이트 텍스트 갱신
     }
 }
