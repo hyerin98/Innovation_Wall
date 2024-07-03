@@ -8,6 +8,7 @@ using IMFINE.Utils.ConfigManager;
 public class GyroReceiver_Test : MonoBehaviour
 {
     public Transform phone; 
+    
     public float motionDelay = 0.1f;  
     public TextMeshProUGUI gyroText;  
 
@@ -27,6 +28,15 @@ public class GyroReceiver_Test : MonoBehaviour
         oscIn.Map(address, OnMessageReceived); 
 
         initialRotation = Quaternion.identity; 
+    }
+
+    void Upate()
+    {
+        if(Input.GetKeyDown(KeyCode.Return))
+        {
+            phone.DOMoveX(-2.5f, 2f);
+            Destroy(phone, 2f);
+        }
     }
 
 
