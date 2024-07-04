@@ -17,6 +17,7 @@ public class GyroReceiver_Test : MonoBehaviour
 
     [Header("Animation Settings")]
     Tweener tweener;
+    public Animation anim;
     public int animationStartDistance;
     public int animationEndDistance;
 
@@ -40,7 +41,7 @@ public class GyroReceiver_Test : MonoBehaviour
         //initialRotation = phone.rotation; // 7.4 pc와 모바일의 방향이 달랐던 원인
         initialRotation = new Quaternion(x, y, z, w); // 7.4 위의 코드를 이렇게 초기화해주면 pc와 모바일의 방향이 같게 움직인다
         oscIn.Map(address, OnMessageReceived);
-        resetButton.onClick.AddListener(ResetRotation);         
+        resetButton.onClick.AddListener(ResetRotation);        
     }
 
     void Update()
@@ -85,9 +86,9 @@ public class GyroReceiver_Test : MonoBehaviour
                 Debug.LogWarning("Failed to parse OSC message.");
             }
         }
-
         OscPool.Recycle(message);
     }
+    
 
     private void UpdateGyro()
     {
@@ -96,8 +97,8 @@ public class GyroReceiver_Test : MonoBehaviour
 
         Quaternion resultRotation = Quaternion.Inverse(initialRotation) * new Quaternion(x, y, z, w);
         //phone.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
-        tweener = phone.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
         tweener.SetEase(AnimationCurves.instance.curves[0]);
+        tweener = phone.DORotateQuaternion(resultRotation, motionDelay).OnUpdate(UpdateRotateText);
     }
 
     private void UpdateRotateText()

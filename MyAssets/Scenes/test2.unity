@@ -146,8 +146,9 @@ Animation:
   m_Animations:
   - {fileID: 7400000, guid: e9a10e96bdb5cc94ea2b2270a94aff8e, type: 2}
   - {fileID: 7400000, guid: 89092859bc108fb468be21bbcf0a34cf, type: 2}
+  - {fileID: 7400000, guid: 918498baff7760e4ab3ea48e2047d3ea, type: 2}
   m_WrapMode: 0
-  m_PlayAutomatically: 1
+  m_PlayAutomatically: 0
   m_AnimatePhysics: 0
   m_CullingType: 0
 --- !u!114 &157736605
@@ -482,6 +483,7 @@ MonoBehaviour:
   phone: {fileID: 157736603}
   spawnPhone: {fileID: 1018209315}
   motionDelay: 0.5
+  anim: {fileID: 0}
   animationStartDistance: 0
   animationEndDistance: 0
   RotText: {fileID: 240797037}
@@ -1771,7 +1773,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2602319534136327955, guid: ed5a1bcac1c9fc249a55a109f53fb1f0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 105.19128
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5163501294162191466, guid: ed5a1bcac1c9fc249a55a109f53fb1f0, type: 3}
       propertyPath: m_RootOrder
