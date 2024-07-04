@@ -5,10 +5,10 @@ public class ConfigData
     public int screenPositionY;
     public int screenWidth;
     public int screenHeight;
-    public int motionDelay;
+    public float motionDelay;
     public bool showGyroLog;
-    public int oscInPort;
-    public string oscOutIp;
-    public int oscOutPort;
+    public int animationStartDistance;
+    public int animationEndDistance;
+    public bool useLinearAnimation;
 }
 
