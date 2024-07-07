@@ -1,0 +1,49 @@
+using UnityEngine;
+
+public class LinearAnimationController : MonoBehaviour
+{
+    public Animation animationComponent;
+    public string animationClipName;
+    public float maxAngle;
+
+    private float x, y, z, w;
+
+    void Start()
+    {
+        animationComponent.Play(animationClipName);
+        animationComponent[animationClipName].speed = 0; // 애니메이션의 기본 속도를 0으로 설정
+    }
+
+    void UpdateGyro()
+    {
+        // 자이로센서 값을 사용하여 애니메이션 재생 시간 조정
+        float angle = Quaternion.Euler(x, y, z).eulerAngles.x; // 예시로 x축 각도 사용
+        float normalizedValue = Mathf.Clamp01(angle / maxAngle); // 값을 0과 1 사이로 정규화
+        animationComponent[animationClipName].normalizedTime = normalizedValue; // 애니메이션 재생 시간 조정
+        animationComponent.Sample(); // 애니메이션 클립의 현재 프레임을 적용
+    }
+
+    void OnMessageReceived(OscMessage message)
+    {
+        Debug.Log("OSC Message Received");
+
+        if (message.Count() != 4) return;
+
+        if (ConfigManager.instance.data.showGyroLog)
+            TraceBox.Log("[R]: " + message);
+
+        if (message.TryGet(0, out x) &&
+            message.TryGet(1, out y) &&
+            message.TryGet(2, out z) &&
+            message.TryGet(3, out w))
+        {
+            UpdateGyro();
+        }
+        else
+        {
+            Debug.LogWarning("Failed to parse OSC message.");
+        }
+
+        OscPool.Recycle(message);
+    }
+}
