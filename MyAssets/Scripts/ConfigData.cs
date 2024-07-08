@@ -6,9 +6,7 @@ public class ConfigData
     public int screenWidth;
     public int screenHeight;
     public float motionDelay;
+    public float resetRotationTween;
     public bool showGyroLog;
-    public int animationStartDistance;
-    public int animationEndDistance;
-    public bool useLinearAnimation;
 }
 

@@ -106,8 +106,6 @@ public class GyroReceiver_Test : MonoBehaviour
 
     public void ResetRotation()
     {
-        resetRotationTween = ConfigManager.instance.data.resetRotationTween;
-
         initialRotation = new Quaternion(x, y, z, w);
         transform.DORotateQuaternion(initialRotation,resetRotationTween);
     }
@@ -142,16 +140,10 @@ public class GyroReceiver_Test : MonoBehaviour
         gyroText.text = $"x: {x}\ny: {y}\nz: {z}\nw: {w}";
 
         Quaternion resultRotation = Quaternion.Inverse(initialRotation) * new Quaternion(x, y, z, w);
-        //tweener.SetEase(AnimationCurves.instance.curves[0]);
-        //tweener = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay).SetEase(Ease.Linear).OnUpdate(UpdateRotateText);
+        tweener.SetEase(AnimationCurves.instance.curves[0]);
+        tweener = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay).SetEase(Ease.Linear).OnUpdate(UpdateRotateText);
         //phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation,motionDelay).OnUpdate(UpdateRotateText);
-        //Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
-
-        Tween rotateTween = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay);
-       // rotateTween.SetEase(AnimationCurves.instance.curves[0]);
-        rotateTween.OnUpdate(UpdateRotateText);
         Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
-
         TriggerAnimationBasedOnAngle(eulerAngles);
     }
 
@@ -160,12 +152,14 @@ public class GyroReceiver_Test : MonoBehaviour
         animator = phones[currentPhoneIndex].GetComponent<Animator>();
         float currentSpeed = animator.GetFloat("speed");
 
+        // bool shouldPlayReverseAnimation = (eulerAngles.x > 45 && eulerAngles.x < 135) ||
+        //                           (eulerAngles.z > 45 && eulerAngles.z < 135) ||
+        //                           eulerAngles.x < 45 || eulerAngles.x < -135;
         bool shouldPlayReverseAnimation = (eulerAngles.x > 45 && eulerAngles.x < 135) ||
-                                          (eulerAngles.x < -45 && eulerAngles.x > -135) ||
-                                           (eulerAngles.z > 45 && eulerAngles.z < 135) ||
-                                          (eulerAngles.z < -45 && eulerAngles.z > -135) ||
-                                         (eulerAngles.y > 45 && eulerAngles.y < 135) ||
-                                           (eulerAngles.y < 300 && eulerAngles.y > 100);
+                                  (eulerAngles.z > 45 && eulerAngles.z < 135) ||
+                                  (eulerAngles.x < -45 && eulerAngles.x > -135) ||
+                                  (eulerAngles.z < -45 && eulerAngles.z > -135);
+
 
 
         if (shouldPlayReverseAnimation)
@@ -187,7 +181,6 @@ public class GyroReceiver_Test : MonoBehaviour
             }
         }
     }
-
 
     private void UpdateRotateText()
     {
