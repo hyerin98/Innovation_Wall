@@ -20,7 +20,7 @@ public class GyroReceiver_Test : MonoBehaviour
     public Animator animator;
     public int animationStartDistance;
     public int animationEndDistance;
-    public float motionDelay;
+    public float motionDelay = 0.1f;
     float resetRotationTween = 0.5f;
 
 
@@ -93,15 +93,18 @@ public class GyroReceiver_Test : MonoBehaviour
     void SwitchPhones()
     {
         var currentPhone = phones[currentPhoneIndex];
-        currentPhone.transform.DOMove(offscreenPosition, 2f);
+        currentPhone.transform.DOMove(offscreenPosition, 1f);
         currentPhone.gameObject.tag = "notPhone";
-        currentPhone.transform.rotation = new Quaternion(x, y, z, w); // 실제 움직이고 있던 폰 로테이션 초기화
+        currentPhone.transform.rotation = Quaternion.identity; // 실제 움직이고 있던 폰 로테이션 초기화
 
         currentPhoneIndex = (currentPhoneIndex + 1) % phones.Count;
         var nextPhone = phones[currentPhoneIndex];
         nextPhone.transform.position = startPosition;
         nextPhone.tag = "Phone";
-        nextPhone.transform.DOMove(new Vector3(0f, 4.75f, 0f), 2f);
+        nextPhone.transform.DOMove(new Vector3(0f, 4.75f, 0f), 1f);
+        nextPhone.transform.DORotate(new Vector3(0f, 360f, 0f), 0.5f, RotateMode.FastBeyond360)
+            .SetEase(Ease.Linear)
+            .OnComplete(() => Debug.Log("회전 완료!"));
     }
 
     public void ResetRotation()
@@ -148,7 +151,7 @@ public class GyroReceiver_Test : MonoBehaviour
         //Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
 
         Tween rotateTween = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay);
-       // rotateTween.SetEase(AnimationCurves.instance.curves[0]);
+        //rotateTween.SetEase(AnimationCurves.instance.curves[0]);
         rotateTween.OnUpdate(UpdateRotateText);
         Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
 
@@ -165,7 +168,7 @@ public class GyroReceiver_Test : MonoBehaviour
                                            (eulerAngles.z > 45 && eulerAngles.z < 135) ||
                                           (eulerAngles.z < -45 && eulerAngles.z > -135) ||
                                          (eulerAngles.y > 45 && eulerAngles.y < 135) ||
-                                           (eulerAngles.y < 300 && eulerAngles.y > 100);
+                                           (eulerAngles.y < 315 && eulerAngles.y > 225);
 
 
         if (shouldPlayReverseAnimation)
@@ -173,7 +176,7 @@ public class GyroReceiver_Test : MonoBehaviour
             if (currentSpeed >= 0)
             {
                 animator.SetFloat("speed", -1f);
-                animator.CrossFade("testtest3", 0.3f);
+                animator.CrossFade("testtest3",0.5f);
                 TraceBox.Log("닫어");
             }
         }
@@ -182,7 +185,7 @@ public class GyroReceiver_Test : MonoBehaviour
             if (currentSpeed < 0)
             {
                 animator.SetFloat("speed", 1f);
-                animator.CrossFade("testtest1", 0.3f);
+                animator.CrossFade("testtest1",0.5f);
                 TraceBox.Log("열어");
             }
         }
