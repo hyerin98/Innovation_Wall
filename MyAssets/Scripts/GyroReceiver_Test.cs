@@ -5,6 +5,7 @@ using OscSimpl;
 using IMFINE.Utils.ConfigManager;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Diagnostics;
 
 public class GyroReceiver_Test : MonoBehaviour
 {
@@ -13,16 +14,14 @@ public class GyroReceiver_Test : MonoBehaviour
     private Vector3 offscreenPosition = new Vector3(-2.5f, 4.75f, 0f);
     private Vector3 startPosition = new Vector3(1.74f, 4.75f, 0f);
     private int currentPhoneIndex = 0;
+    private bool isSwitchingPhones = false;
 
     [Header("Animation Settings")]
     public Ease ease;
-    Tweener tweener;
     public Animator animator;
-    public int animationStartDistance;
-    public int animationEndDistance;
     public float motionDelay = 0.1f;
-    float resetRotationTween = 0.5f;
-
+    public float resetRotationTween = 50f;
+    public float folderAnimSpeed = 1f;
 
     [Header("UI Settings")]
     public TextMeshProUGUI RotText;
@@ -41,7 +40,6 @@ public class GyroReceiver_Test : MonoBehaviour
     private void Awake()
     {
         InitializePhonePositions();
-        
     }
 
     private void Start()
@@ -59,6 +57,8 @@ public class GyroReceiver_Test : MonoBehaviour
         foreach (var phone in phones)
         {
             phone.transform.position = offscreenPosition;
+            Animator phoneAnimator = phone.GetComponent<Animator>();
+            phoneAnimator.Play("testtest1", -1, 0f); // 초기화 시 애니메이션 설정
         }
         if (phones.Count > 0)
         {
@@ -68,9 +68,11 @@ public class GyroReceiver_Test : MonoBehaviour
     }
 
 
+
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Return) && !isSwitchingPhones)
         {
             SwitchPhones();
         }
@@ -78,46 +80,62 @@ public class GyroReceiver_Test : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && isDebugMode)
         {
             isDebugMode = false;
-            Debug.Log("KeyDown Space");
+            TraceBox.Log("DebugMode Off");
             DebugCanvas.SetActive(false);
         }
         else if (Input.GetKeyDown(KeyCode.Space) && !isDebugMode)
         {
             isDebugMode = true;
-            Debug.Log("Reply KeyDown Space");
+            TraceBox.Log("DebugMode On");
             DebugCanvas.SetActive(true);
         }
-
     }
 
     void SwitchPhones()
     {
+        isSwitchingPhones = true;
+
         var currentPhone = phones[currentPhoneIndex];
-        currentPhone.transform.DOMove(offscreenPosition, 1f);
-        currentPhone.gameObject.tag = "notPhone";
-        currentPhone.transform.rotation = Quaternion.identity; // 실제 움직이고 있던 폰 로테이션 초기화
+        currentPhone.transform.DOMove(offscreenPosition, 1f).OnComplete(() =>
+        {
+            currentPhone.gameObject.tag = "notPhone";
+            currentPhone.transform.rotation = Quaternion.identity; // 실제 움직이고 있던 폰 로테이션 초기화
+            currentPhone.SetActive(false);
+        });
 
         currentPhoneIndex = (currentPhoneIndex + 1) % phones.Count;
         var nextPhone = phones[currentPhoneIndex];
+        nextPhone.SetActive(true);
         nextPhone.transform.position = startPosition;
         nextPhone.tag = "Phone";
-        nextPhone.transform.DOMove(new Vector3(0f, 4.75f, 0f), 1f);
-        nextPhone.transform.DORotate(new Vector3(0f, 360f, 0f), 0.5f, RotateMode.FastBeyond360)
-            .SetEase(Ease.Linear)
-            .OnComplete(() => Debug.Log("회전 완료!"));
+        nextPhone.transform.DOMove(new Vector3(0f, 4.75f, 0f), 1f).OnComplete(() =>
+        {
+            nextPhone.transform.DORotate(new Vector3(0f, 360f, 0f), 0.5f, RotateMode.FastBeyond360)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    isSwitchingPhones = false;
+                    TraceBox.Log("Rotation Complete!");
+                });
+            Animator nextPhoneAnimator = nextPhone.GetComponent<Animator>();
+            nextPhoneAnimator.Play("testtest1", -1, 0f); // 폰 변경 시 애니메이션 초기화
+        });
+
+        TraceBox.Log("current phone index: " + currentPhoneIndex);
     }
+
 
     public void ResetRotation()
     {
         resetRotationTween = ConfigManager.instance.data.resetRotationTween;
 
         initialRotation = new Quaternion(x, y, z, w);
-        transform.DORotateQuaternion(initialRotation,resetRotationTween);
+        phones[currentPhoneIndex].transform.DORotateQuaternion(initialRotation, resetRotationTween);
     }
 
     void OnMessageReceived(OscMessage message)
     {
-        //Debug.Log("OSC Message Received");
+        TraceBox.Log("OSC Message Received");
 
         if (message.Count() != 4) return;
 
@@ -133,7 +151,7 @@ public class GyroReceiver_Test : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Failed to parse OSC message.");
+            TraceBox.Log("Failed to parse OSC message.");
         }
 
         OscPool.Recycle(message);
@@ -141,17 +159,13 @@ public class GyroReceiver_Test : MonoBehaviour
 
     private void UpdateGyro()
     {
+        if (isSwitchingPhones) return;
+
         motionDelay = ConfigManager.instance.data.motionDelay;
         gyroText.text = $"x: {x}\ny: {y}\nz: {z}\nw: {w}";
 
         Quaternion resultRotation = Quaternion.Inverse(initialRotation) * new Quaternion(x, y, z, w);
-        //tweener.SetEase(AnimationCurves.instance.curves[0]);
-        //tweener = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay).SetEase(Ease.Linear).OnUpdate(UpdateRotateText);
-        //phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation,motionDelay).OnUpdate(UpdateRotateText);
-        //Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
-
         Tween rotateTween = phones[currentPhoneIndex].transform.DORotateQuaternion(resultRotation, motionDelay);
-        //rotateTween.SetEase(AnimationCurves.instance.curves[0]);
         rotateTween.OnUpdate(UpdateRotateText);
         Vector3 eulerAngles = phones[currentPhoneIndex].transform.rotation.eulerAngles;
 
@@ -161,23 +175,22 @@ public class GyroReceiver_Test : MonoBehaviour
     private void TriggerAnimationBasedOnAngle(Vector3 eulerAngles)
     {
         animator = phones[currentPhoneIndex].GetComponent<Animator>();
+        folderAnimSpeed = ConfigManager.instance.data.folderAnimSpeed;
         float currentSpeed = animator.GetFloat("speed");
 
         bool shouldPlayReverseAnimation = (eulerAngles.x > 45 && eulerAngles.x < 135) ||
-                                          (eulerAngles.x < -45 && eulerAngles.x > -135) ||
-                                           (eulerAngles.z > 45 && eulerAngles.z < 135) ||
-                                          (eulerAngles.z < -45 && eulerAngles.z > -135) ||
-                                         (eulerAngles.y > 45 && eulerAngles.y < 135) ||
-                                           (eulerAngles.y < 315 && eulerAngles.y > 225);
-
-
+                                         (eulerAngles.x < 315 && eulerAngles.x > 225) ||
+                                          (eulerAngles.z > 45 && eulerAngles.z < 135) ||
+                                         (eulerAngles.z < -45 && eulerAngles.z > -135) ||
+                                        (eulerAngles.y > 45 && eulerAngles.y < 135) ||
+                                          (eulerAngles.y < 315 && eulerAngles.y > 225);
         if (shouldPlayReverseAnimation)
         {
             if (currentSpeed >= 0)
             {
                 animator.SetFloat("speed", -1f);
-                animator.CrossFade("testtest3",0.5f);
-                TraceBox.Log("닫어");
+                animator.CrossFade("testtest3", folderAnimSpeed);
+                TraceBox.Log("Phone Close");
             }
         }
         else
@@ -185,12 +198,11 @@ public class GyroReceiver_Test : MonoBehaviour
             if (currentSpeed < 0)
             {
                 animator.SetFloat("speed", 1f);
-                animator.CrossFade("testtest1",0.5f);
-                TraceBox.Log("열어");
+                animator.CrossFade("testtest1", folderAnimSpeed);
+                TraceBox.Log("Phone Open");
             }
         }
     }
-
 
     private void UpdateRotateText()
     {

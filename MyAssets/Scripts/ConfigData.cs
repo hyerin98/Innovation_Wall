@@ -7,6 +7,7 @@ public class ConfigData
     public int screenHeight;
     public float motionDelay;
     public float resetRotationTween;
+    public float folderAnimSpeed;
     public bool showGyroLog;
 }
 

@@ -23,46 +23,45 @@ public class Test : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Show1(); 
-
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-
             Show2(); 
         }
         if (Input.GetKey(KeyCode.Alpha3))
         {
-
             Show3(); 
         }
     }
 
-    void Show1()
+    public void Show1()
     {
         if (materials != null && materials.Length > 0)
         {
             materials[0].DOOffset(Vector3.zero, 1).SetEase(Ease.Linear);
             materials[1].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
             materials[2].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
+
         }
     }
-    void Show2()
+    
+    public void Show2()
     {
         if (materials != null && materials.Length > 0)
         {
-            materials[1].DOOffset(Vector3.zero, 1).SetEase(Ease.Linear);
             materials[0].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
+            materials[1].DOOffset(Vector3.zero, 1).SetEase(Ease.Linear);
             materials[2].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
         }
     }
-    void Show3()
+    
+    public void Show3()
     {
         if (materials != null && materials.Length > 0)
         {
-            materials[2].DOOffset(Vector3.zero, 1).SetEase(Ease.Linear);
-            materials[1].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
             materials[0].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
+            materials[1].DOOffset(Vector3.down, 1).SetEase(Ease.Linear);
+            materials[2].DOOffset(Vector3.zero, 1).SetEase(Ease.Linear);
         }
     }
-
 }
